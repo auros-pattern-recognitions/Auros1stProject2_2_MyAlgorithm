@@ -15,10 +15,6 @@ namespace Auros1stProject2_2_MyAlgorithm
     {
         static void Main(string[] args)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            
-
             //
             // "SiO2 1000nm_on_Si.dat" 파일 로딩 후
             // 측정 스펙트럼 데이터를 alpha, beta 로 변환한다.
@@ -75,7 +71,7 @@ namespace Auros1stProject2_2_MyAlgorithm
 
             // degree, radian 변환 인라인 함수 정의.
             double degree2radian(double angle) => ((angle * (PI)) / 180.0);
-            double radian2degree(double angle) => (angle * (180.0 / PI));
+            //double radian2degree(double angle) => (angle * (180.0 / PI));
 
             // Polarizer offset 각도. (45도)
             double PolarizerRadian = degree2radian(45.0);
@@ -268,13 +264,13 @@ namespace Auros1stProject2_2_MyAlgorithm
             double nowThickness = 0.0,
                    preThickness = 0.0;
 
-            double d0 = 1200.0;                      // 탐색을 시작할 두께.
+            double d0 = 800.0;                      // 탐색을 시작할 두께.
             const double ThicknessRecipe = 1000.0;  // 레시피 두께.
-            
-            
+
+
 
             double StepSize = 0.9;  // step size.
-            double scale = 1.1;     // step size 스케일 값
+            double scale = 1.1;     // step size 스케일 값.
             int IsLeft = 1;         // d0 위치 판단 변수.
 
             #region 방향을 판단한다.
@@ -375,11 +371,12 @@ namespace Auros1stProject2_2_MyAlgorithm
             // 현재 두께를 갱신한다.
             nowThickness = d0 + StepSize;
 
-            // 두께별 MSE 를 계산해서 MSEs 배열에 저장한다.
+            int times = 0;
             while (true)
             {
+                ++times;
                 #region 총 반사계수를 계산한다.
-                
+
                 // 총 반사계수를 저장할 배열 선언.
                 Rp = new Complex[LenData];
                 Rs = new Complex[LenData];
@@ -460,14 +457,18 @@ namespace Auros1stProject2_2_MyAlgorithm
                 #region 이전 MSE 와의 기울기를 계산하여 기울기 부호 변화 시 while 문을 탈출한다.
 
                 // 두께 변화량, MSE 변화량, 기울기를 계산한다.
-                double dx = nowMSE - preMSE;
-                double dy = nowThickness - preThickness;
+                double dy = nowMSE - preMSE;
+                double dx = nowThickness - preThickness;
                 double gradient = dy / dx;
+
+                // WriteLine($"{times} \t {nowMSE} \t {nowThickness}");
+                //WriteLine(nowMSE);
+                WriteLine(nowThickness);
 
                 // 이전 두께를 갱신한다.
                 preThickness = nowThickness;
 
-                // 기울기 판단. -> 오르막 : +, 내리막 : 새로운 while 문으로 들어간다(모멘텀).
+                // 기울기를 판단한다.
                 switch (IsLeft)
                 {
                     // d0 가 recipe 두께보다 오른쪽에 있을 때.
@@ -476,6 +477,7 @@ namespace Auros1stProject2_2_MyAlgorithm
                             // 오르막일 때.
                             if (gradient < 0)
                             {
+                                // step size 를 늘려준다.
                                 StepSize *= scale;
                                 nowThickness += StepSize;
                             }
@@ -491,6 +493,7 @@ namespace Auros1stProject2_2_MyAlgorithm
                             // 오르막일 때.
                             if (gradient > 0)
                             {
+                                // step size 를 늘려준다.
                                 StepSize *= scale;
                                 nowThickness += StepSize;
                             }
@@ -518,13 +521,16 @@ namespace Auros1stProject2_2_MyAlgorithm
             // 모멘텀을 위한 변수를 선언한다.
             double mt = 0.0, vt = 0.0, mt_biascorr = 0.0, vt_biascorr = 0.0;
             double Epsilon = Pow(10, -8);
-            int cnt = 1;
 
+            int cnt = 1;    // 회차 변수.
+
+            // global minimum 과 그 때의 두께 값 변수.
             double globalMinimum, d_sol;
 
-            // 내리막을 찾은 후 모멘텀 알고리즘을 적용한다.
-            while(true)
+            // 내리막을 찾은 후 Adam 알고리즘을 적용한다.
+            while (true)
             {
+                ++times;
                 #region 총 반사계수를 계산한다.
 
                 // 총 반사계수를 저장할 배열 선언.
@@ -604,7 +610,11 @@ namespace Auros1stProject2_2_MyAlgorithm
                 // 현재 MSE 값을 구한다.
                 nowMSE = sum / LenData;
                 #endregion
-                // WriteLine($"회차 : {cnt}, MSE : {nowMSE}, 두께 : {nowThickness}");
+                //WriteLine($"{times} \t {nowMSE} \t {nowThickness}");
+                //WriteLine(nowMSE);
+                WriteLine(nowThickness);
+
+                #region 최적화 완료 조건을 확인한다.
 
                 // MSE 값의 변화가 0.00001(10^-6) 보다 작으면 최적화 수행을 중단한다.
                 if (Abs(nowMSE - preMSE) <= 0.000001)
@@ -617,39 +627,30 @@ namespace Auros1stProject2_2_MyAlgorithm
 
                     goto FindDSol;
                 }
-
-
-                #region Adam
+                #endregion
+                #region Adam 알고리즘을 적용한다.
                 // 두께 변화량, MSE 변화량, 기울기를 계산한다.
-                double dx = nowMSE - preMSE;
-                double dy = nowThickness - preThickness;
+                double dy = nowMSE - preMSE;
+                double dx = nowThickness - preThickness;
                 double gradient = dy / dx;
-                double degreeOfGradient = radian2degree(Atan(gradient)) + 90.0;
-
-                
+                // double degreeOfGradient = radian2degree(Atan(gradient)) + 90.0;
 
                 // 이전 두께를 갱신한다.
                 preThickness = nowThickness;
                 preMSE = nowMSE;
 
+                // 아담 알고리즘을 사용한다.
                 mt = 0.9 * mt + (1 - 0.9) * gradient;
                 vt = 0.999 * vt + (1 - 0.999) * Pow(gradient, 2);
                 mt_biascorr = mt / (1 - Pow(0.9, cnt));
                 vt_biascorr = vt / (1 - Pow(0.999, cnt));
                 nowThickness = preThickness - (StepSize * mt_biascorr) / (Sqrt(vt_biascorr) + Epsilon);
 
-                // step size 조절해야됨.
-
+                // 회차를 증가시킨다.
                 cnt++;
                 #endregion
             }
-
-            FindDSol:
-
-            stopwatch.Stop();
-            WriteLine($"소요 시간: {stopwatch.ElapsedMilliseconds}ms");
-
-            WriteLine($"global minimum (MSE) : {globalMinimum},   최종 두께 : {d_sol}nm");
+            FindDSol: WriteLine($"회차 : {times},    global minimum (MSE) : {globalMinimum},   최종 두께 : {d_sol}nm");
 
         }
     }
