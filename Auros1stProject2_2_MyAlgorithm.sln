@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auros1stProject2_2_MyAlgorithm", "Auros1stProject2_2_MyAlgorithm\Auros1stProject2_2_MyAlgorithm.csproj", "{3485C933-28B2-4E59-ABEF-47D75BD4AF9D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3485C933-28B2-4E59-ABEF-47D75BD4AF9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3485C933-28B2-4E59-ABEF-47D75BD4AF9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3485C933-28B2-4E59-ABEF-47D75BD4AF9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3485C933-28B2-4E59-ABEF-47D75BD4AF9D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {519373C3-9D25-4265-9722-72C9E3384649}
+	EndGlobalSection
+EndGlobal
