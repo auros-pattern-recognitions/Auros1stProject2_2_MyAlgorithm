@@ -71,7 +71,7 @@ namespace Auros1stProject2_2_MyAlgorithm
 
             // degree, radian 변환 인라인 함수 정의.
             double degree2radian(double angle) => ((angle * (PI)) / 180.0);
-            //double radian2degree(double angle) => (angle * (180.0 / PI));
+            double radian2degree(double angle) => (angle * (180.0 / PI));
 
             // Polarizer offset 각도. (45도)
             double PolarizerRadian = degree2radian(45.0);
@@ -264,7 +264,7 @@ namespace Auros1stProject2_2_MyAlgorithm
             double nowThickness = 0.0,
                    preThickness = 0.0;
 
-            double d0 = 800.0;                      // 탐색을 시작할 두께.
+            double d0 = 1000.0;                      // 탐색을 시작할 두께.
             const double ThicknessRecipe = 1000.0;  // 레시피 두께.
 
 
@@ -463,7 +463,7 @@ namespace Auros1stProject2_2_MyAlgorithm
 
                 // WriteLine($"{times} \t {nowMSE} \t {nowThickness}");
                 //WriteLine(nowMSE);
-                WriteLine(nowThickness);
+                //WriteLine(nowThickness);
 
                 // 이전 두께를 갱신한다.
                 preThickness = nowThickness;
@@ -610,9 +610,10 @@ namespace Auros1stProject2_2_MyAlgorithm
                 // 현재 MSE 값을 구한다.
                 nowMSE = sum / LenData;
                 #endregion
-                //WriteLine($"{times} \t {nowMSE} \t {nowThickness}");
+                //WriteLine($"MSE : {nowMSE} \t 두께 : {nowThickness} \t gradient of degree{radian2degree(Atan(Abs(gradient)))}");
                 //WriteLine(nowMSE);
-                WriteLine(nowThickness);
+                //WriteLine(nowThickness);
+
 
                 #region 최적화 완료 조건을 확인한다.
 
@@ -633,7 +634,9 @@ namespace Auros1stProject2_2_MyAlgorithm
                 double dy = nowMSE - preMSE;
                 double dx = nowThickness - preThickness;
                 double gradient = dy / dx;
-                // double degreeOfGradient = radian2degree(Atan(gradient)) + 90.0;
+                //double ratioOfGradient = radian2degree(Atan(Abs(gradient))) / 90.0;
+
+                WriteLine($"MSE : {nowMSE} \t 두께 : {nowThickness} \t gradient : {gradient} \t StepSize : {StepSize}");
 
                 // 이전 두께를 갱신한다.
                 preThickness = nowThickness;
@@ -646,6 +649,17 @@ namespace Auros1stProject2_2_MyAlgorithm
                 vt_biascorr = vt / (1 - Pow(0.999, cnt));
                 nowThickness = preThickness - (StepSize * mt_biascorr) / (Sqrt(vt_biascorr) + Epsilon);
 
+                // 방향을 고려해서 StepSize를 갱신해준다.
+                switch(IsLeft)
+                {
+                    case 0:
+                        StepSize += gradient;
+                        break;
+                    case 1:
+                        StepSize -= gradient;
+                        break;
+                }
+                
                 // 회차를 증가시킨다.
                 cnt++;
                 #endregion
